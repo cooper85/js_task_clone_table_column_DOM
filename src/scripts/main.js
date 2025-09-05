@@ -13,7 +13,7 @@ function handleNegativeColIndex(row, index) {
 
 /**
  * Clone column that has sourceIndex of table
- * and insert it after one that has targetIndex
+ * and insert it before the column with targetIndex
  *
  * @param {string} tableQuery
  * @param {integer} sourceIndex
@@ -24,17 +24,7 @@ function handleNegativeColIndex(row, index) {
 function formTable(tableQuery, sourceIndex, targetIndex) {
   const rows = document.querySelectorAll(tableQuery + ' tr');
 
-  // we will get empty rows for empty search result, so skip any checks
   rows.forEach((row) => {
-    /**
-     * We're checking this into cycle - because
-     * 1. we do not know anything about td span=x
-     * 2. we do not provide correct implementation for colspan
-     * 4. we skipped situation when there replacement is not needed
-     * 5. we checked boundaries
-     * 6. for negative index values - we add length of row (backward order)
-     */
-
     // handle negative indexes
     const srcIdx = handleNegativeColIndex(row, sourceIndex);
     const trgIdx = handleNegativeColIndex(row, targetIndex);
@@ -47,21 +37,21 @@ function formTable(tableQuery, sourceIndex, targetIndex) {
       return;
     }
 
-    // we're about to insert new on last position - so check without "-1"
-    if (trgIdx >= row.cells.length) {
-      return;
-    }
-
     // deep clone
-
     const clonedCell = row.cells[srcIdx].cloneNode(true);
 
-    // insert cloned, || null - insert at the end
+    // safe link to target cell
+    const targetCell = row.cells[trgIdx] || null;
 
-    row.insertBefore(clonedCell, row.cells[trgIdx + 1] || null);
+    // insert clone cell before target one
+    row.insertBefore(clonedCell, targetCell);
   });
 }
 
 const query = 'table';
 
-formTable(query, 1, -1);
+/**
+ * example: copy column "Position" (index: 1)
+ * before column "Salary" (index: 4)
+ */
+formTable(query, 1, 4);
